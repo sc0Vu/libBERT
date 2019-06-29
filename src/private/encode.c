@@ -235,6 +235,8 @@ int bert_encode_list(bert_encoder_t *encoder,const bert_list_t *list)
 {
 	bert_list_node_t *next_node = list->head;
 	size_t length = 0;
+	size_t buffer_length = 1;
+	unsigned char buffer[buffer_length];
 
 	while (next_node)
 	{
@@ -259,6 +261,11 @@ int bert_encode_list(bert_encoder_t *encoder,const bert_list_t *list)
 		}
 
 		next_node = next_node->next;
+	}
+	// the nil tag
+	bert_write_magic(buffer, BERT_NIL);
+	if ((result = bert_encoder_write(encoder, buffer, buffer_length)) != BERT_SUCCESS) {
+		return result;
 	}
 
 	return BERT_SUCCESS;
