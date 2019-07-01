@@ -760,8 +760,35 @@ int bert_decode_list(bert_decoder_t *decoder,bert_data_t **data)
 		}
 	}
 
-	BERT_DECODER_READ(decoder,1);
-	BERT_DECODER_STEP(decoder,1);
+	switch ((result = bert_decoder_read(decoder,1)))
+	{
+		case BERT_SUCCESS:
+			break;
+		case BERT_ERRNO_EMPTY:
+			bert_data_destroy(element);
+			bert_data_destroy(new_data);
+			return 0;
+		default:
+			bert_data_destroy(element);
+			bert_data_destroy(new_data);
+			return result;
+	}
+
+	bert_magic_t magic;
+
+	if ((result = bert_decode_magic(decoder,&magic)) != BERT_SUCCESS)
+	{
+		return result;
+	}
+
+	if (magic != BERT_NIL) {
+		bert_data_destroy(element);
+		bert_data_destroy(new_data);
+		return BERT_ERRNO_INVALID;
+	}
+
+	// BERT_DECODER_READ(decoder,1);
+	// BERT_DECODER_STEP(decoder,1);
 
 	*data = new_data;
 	return BERT_SUCCESS;
